@@ -3,7 +3,7 @@ import connectDB from '@/lib/mongodb';
 import Waitlist from '@/models/Waitlist';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export async function POST(req: NextRequest) {
   try {
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
 
     const count = await Waitlist.countDocuments();
 
-    if (process.env.RESEND_API_KEY) {
+    if (resend) {
       try {
         await resend.emails.send({
           from: 'Outricate <onboarding@resend.dev>',
