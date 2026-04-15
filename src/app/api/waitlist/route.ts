@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Waitlist from '@/models/Waitlist';
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,6 +43,26 @@ export async function POST(req: NextRequest) {
     });
 
     const count = await Waitlist.countDocuments();
+
+    if (process.env.RESEND_API_KEY) {
+      try {
+        await resend.emails.send({
+          from: 'Outricate <onboarding@resend.dev>',
+          to: 'plexus257@gmail.com',
+          subject: 'New Waitlist Sign-up',
+          html: `
+            <h1>New Waitlist Entry (#${count})</h1>
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Business:</strong> ${businessName}</p>
+            <p><strong>Industry:</strong> ${industry}</p>
+            <p><strong>Phone:</strong> ${phone}</p>
+            <p><strong>Email:</strong> ${email}</p>
+          `
+        });
+      } catch (emailError) {
+        console.error('Failed to send waitlist email:', emailError);
+      }
+    }
 
     return NextResponse.json(
       { success: true, position: count, id: entry._id },
