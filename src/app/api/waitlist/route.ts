@@ -68,10 +68,10 @@ export async function POST(req: NextRequest) {
       { success: true, position: count, id: entry._id },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Waitlist POST error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }
